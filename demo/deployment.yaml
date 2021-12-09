@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admission-server
+  labels:
+    app: admission-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admission-server
+  template:
+    metadata:
+      labels:
+        app: admission-server
+    spec:
+      serviceAccountName: admission-sa
+      containers:
+      - name: server
+        image: silviugae/admission-controller:0.0.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: tls-certs
+          mountPath: /etc/certs
+          readOnly: true
+      volumes:
+      - name: tls-certs
+        secret:
+          secretName: server-cert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admission-server
+spec:
+  selector:
+    app: admission-server
+  ports:
+    - port: 443
+      targetPort: 443
