@@ -17,7 +17,8 @@ spec:
       serviceAccountName: admission-sa
       containers:
       - name: server
-        image: silviugae/admission-controller:0.0.2
+        image: silviugae/admission-controller:0.0.3
+        command: ["./admission-controller", "--tls-cert", "/etc/certs/tls.crt", "--tls-key", "/etc/certs/tls.key", "--labels", "test"]
         imagePullPolicy: Always
         ports:
         - containerPort: 443

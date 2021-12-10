@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -20,6 +21,7 @@ import (
 var (
 	tlsCert string
 	tlsKey  string
+	labels  string
 	port    int
 	codecs  = serializer.NewCodecFactory(runtime.NewScheme())
 	logger  = log.New(os.Stdout, "http: ", log.LstdFlags)
@@ -31,13 +33,13 @@ var rootCmd = &cobra.Command{
 	Long: `Example showing how to implement a basic validating webhook in Kubernetes.
 
 Example:
-$ validating-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
+$ validating-webhook --tls-cert <tls_cert> --tls-key <tls_key> --labels <label1,label2,...> --port <port>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if tlsCert == "" || tlsKey == "" {
-			fmt.Println("--tls-cert and --tls-key required")
+		if tlsCert == "" || tlsKey == "" || len(labels) == 0 {
+			fmt.Println("--tls-cert, --tls-key and --labels are required")
 			os.Exit(1)
 		}
-		runWebhookServer(tlsCert, tlsKey)
+		runWebhookServer(tlsCert, tlsKey, labels)
 	},
 }
 
@@ -50,6 +52,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVar(&tlsCert, "tls-cert", "", "Certificate for TLS")
 	rootCmd.Flags().StringVar(&tlsKey, "tls-key", "", "Private key file for TLS")
+	rootCmd.Flags().StringVar(&labels, "labels", "", "Comma-separated list of mandatory labels")
 	rootCmd.Flags().IntVar(&port, "port", 443, "Port to listen on for HTTPS traffic")
 }
 
@@ -79,7 +82,7 @@ func admissionReviewFromRequest(r *http.Request, deserializer runtime.Decoder) (
 	return admissionReviewRequest, nil
 }
 
-func validatePod(w http.ResponseWriter, r *http.Request) {
+func validatePod(w http.ResponseWriter, r *http.Request, labelString string) {
 	logger.Printf("received message on validate")
 
 	deserializer := codecs.UniversalDeserializer()
@@ -123,13 +126,17 @@ func validatePod(w http.ResponseWriter, r *http.Request) {
 	admissionResponse := &admissionv1.AdmissionResponse{}
 	admissionResponse.Allowed = true
 
-	if value, ok := pod.Labels["test-label"]; !ok {
-		admissionResponse.Allowed = false
-		admissionResponse.Result = &metav1.Status{
-			Message: "missing required hello label",
+	mandatoryLabels := strings.Split(labelString, ",") 
+	for _, label := range mandatoryLabels {
+		if _, ok := pod.Labels[label]; !ok {
+			notAllowedMessage := fmt.Sprintf("Missing required label: %s", label)
+			admissionResponse.Allowed = false
+			admissionResponse.Result = &metav1.Status{
+				Message: notAllowedMessage,
+			}
+		// } else if value == "test-value" {
+		// 	admissionResponse.Warnings = []string{"test values will be disalbed in the future"}
 		}
-	} else if value == "test-value" {
-		admissionResponse.Warnings = []string{"test values will be disalbed in the future"}
 	}
 
 	// Construct the response, which is just another AdmissionReview.
@@ -151,14 +158,16 @@ func validatePod(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-func runWebhookServer(certFile, keyFile string) {
+func runWebhookServer(certFile, keyFile, labelString string) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("Starting webhook server")
-	http.HandleFunc("/validate", validatePod)
+	http.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) {
+		validatePod(w, r, labelString)
+	})
 	server := http.Server{
 		Addr: fmt.Sprintf(":%d", port),
 		TLSConfig: &tls.Config{
