@@ -7,24 +7,18 @@ metadata:
     chart: {{ template "app.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    {{- if .Values.labels }}
-{{ toYaml .Values.labels | indent 4 }}
-    {{- end }}
+{{ toYaml .Values.config.labels | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "app.fullname" . }}
-      {{- if .Values.labels }}
-{{ toYaml .Values.labels | indent 6 }}
-      {{- end }}
+{{ toYaml .Values.config.labels | indent 6 }}
   template:
     metadata:
       labels:
         app: {{ template "app.fullname" . }}
-        {{- if .Values.labels }}
-{{ toYaml .Values.labels | indent 8 }}
-        {{- end }}
+{{ toYaml .Values.config.labels | indent 8 }}
     spec:
       securityContext:
         runAsUser: 1000
