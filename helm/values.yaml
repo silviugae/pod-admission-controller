@@ -1,0 +1,21 @@
+replicaCount: 1
+imagePullPolicy: Always
+
+image:
+  name: silviugae/admission-controller
+  tag: 0.0.3
+
+config:
+  webserver:
+    port: 443
+    certsPath: /etc/certs
+  labels: "test" #comma-separated list of mandatory labels that should be checked by the admission controller
+  webhook:
+    failurePolicy: Ignore
+    sideEffects: None
+    timeoutSeconds: 5
+    scope: Namespaced
+
+affinity: {}
+
+tolerations: {}

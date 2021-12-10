@@ -1,0 +1,14 @@
+kind: Certificate
+apiVersion: cert-manager.io/v1
+metadata:
+  name: {{ template "app.fullname" . }}-ca-root
+spec:
+  secretName: {{ template "app.fullname" . }}-ca-root
+  isCA: true
+  commonName: {{ template "app.fullname" . }}-ca-root
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ template "app.fullname" . }}-ca-bootstrap

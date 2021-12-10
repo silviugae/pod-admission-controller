@@ -1,0 +1,20 @@
+kind: Certificate
+apiVersion: cert-manager.io/v1
+metadata:
+  name: {{ template "app.fullname" . }}-client
+spec:
+  issuerRef:
+    name: {{ template "app.fullname" . }}-ca-root
+    kind: ClusterIssuer
+  secretName: {{ template "app.fullname" . }}-client-cert
+  duration: 2160h
+  renewBefore: 360h
+  dnsNames:
+    - pod-validation.{{ Release.Namespace }}.svc
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  usages:
+    - client auth
+    - server auth

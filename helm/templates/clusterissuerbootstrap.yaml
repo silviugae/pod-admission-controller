@@ -1,0 +1,6 @@
+kind: ClusterIssuer
+apiVersion: cert-manager.io/v1
+metadata:
+  name: {{ template "app.fullname" . }}-ca-bootstrap
+spec:
+  selfSigned: {}

@@ -1,0 +1,23 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ template "app.fullname" . }}-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: {{ template "app.fullname" . }}-client
+webhooks:
+  - name: pod-validation.{{ Release.Namespace }}.svc
+    admissionReviewVersions: ["v1"]
+    clientConfig:
+      service:
+        name: {{ template "app.fullname" . }}-service
+        namespace: {{ Release.Namespace }}
+        path: "/validate"
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+        scope: {{ .Values.config.webhook.scope }}
+    failurePolicy: {{ .Values.config.webhook.failurePolicy }}
+    sideEffects: {{ .Values.config.webhook.sideEffects }}
+    timeoutSeconds: {{ .Values.config.webhook.timeoutSeconds }}

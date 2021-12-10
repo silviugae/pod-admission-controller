@@ -1,0 +1,12 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ template "app.fullname" . }}-crb
+subjects:
+- kind: ServiceAccount
+  name: {{ template "app.fullname" . }}-sa
+  namespace: {{ Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ template "app.fullname" . }}-cr
+  apiGroup: rbac.authorization.k8s.io

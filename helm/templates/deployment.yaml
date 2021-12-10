@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app.fullname" . }}
+  labels:
+    app: {{ template "app.fullname" . }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- if .Values.labels }}
+{{ toYaml .Values.labels | indent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "app.fullname" . }}
+      {{- if .Values.labels }}
+{{ toYaml .Values.labels | indent 6 }}
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app.fullname" . }}
+        {{- if .Values.labels }}
+{{ toYaml .Values.labels | indent 8 }}
+        {{- end }}
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+      serviceAccountName: {{ template "app.fullname" . }}-sa
+      containers:
+      - name: admission-controller
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        command: ["./admission-controller", "--tls-cert", "{{ .Values.config.webserver.certsPath }}/tls.crt", "--tls-key", "{{ .Values.config.webserver.certsPath }}/tls.key", "--labels", "{{ .Values.config.labels }}"]
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        ports:
+        - containerPort: {{ .Values.config.webserver.port }}
+        volumeMounts:
+        - name: tls-certs
+          mountPath: {{ .Values.config.webserver.certsPath }}
+          readOnly: true
+      volumes:
+      - name: tls-certs
+        secret:
+          secretName: {{ template "app.fullname" . }}-server-cert
+  {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+  {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}

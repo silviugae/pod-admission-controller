@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "app.fullname" . }}-service
+  labels:
+    app: {{ template "app.fullname" . }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  selector:
+      app: {{ template "app.fullname" . }}
+      {{- if .Values.labels }}
+{{ toYaml .Values.labels | indent 6 }}
+      {{- end }}
+  ports:
+    - name: https
+      protocol: TCP
+      port: {{ .Values.config.webserver.port }}
+      targetPort: {{ .Values.config.webserver.port }}
