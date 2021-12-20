@@ -16,6 +16,17 @@ config:
     timeoutSeconds: 5
     scope: Namespaced
 
+certmanager:
+  namespace: cert-manager #it is mandatory to specify the namespace where cert-manager was deployed
+
+resources: {}
+  # requests:
+  #   memory:
+  #   cpu:
+  # limits:
+  #   memory:
+  #   cpu:
+
 affinity: {}
 
 tolerations: {}

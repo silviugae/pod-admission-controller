@@ -7,18 +7,15 @@ metadata:
     chart: {{ template "app.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-{{ toYaml .Values.config.labels | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "app.fullname" . }}
-{{ toYaml .Values.config.labels | indent 6 }}
   template:
     metadata:
       labels:
         app: {{ template "app.fullname" . }}
-{{ toYaml .Values.config.labels | indent 8 }}
     spec:
       securityContext:
         runAsUser: 1000
@@ -30,6 +27,7 @@ spec:
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
         command: ["./admission-controller", "--tls-cert", "{{ .Values.config.webserver.certsPath }}/tls.crt", "--tls-key", "{{ .Values.config.webserver.certsPath }}/tls.key", "--labels", "{{ .Values.config.labels }}"]
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.resources }}
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory }}
@@ -37,6 +35,7 @@ spec:
           limits:
             memory: {{ .Values.resources.limits.memory }}
             cpu: {{ .Values.resources.limits.cpu }}
+        {{- end}}
         ports:
         - containerPort: {{ .Values.config.webserver.port }}
         volumeMounts:

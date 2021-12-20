@@ -11,7 +11,6 @@ spec:
   type: ClusterIP
   selector:
       app: {{ template "app.fullname" . }}
-{{ toYaml .Values.config.labels | indent 6 }}
   ports:
     - name: https
       protocol: TCP

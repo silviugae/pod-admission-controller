@@ -2,6 +2,7 @@ kind: Certificate
 apiVersion: cert-manager.io/v1
 metadata:
   name: {{ template "app.fullname" . }}-ca-root
+  namespace: {{ .Values.certmanager.namespace }}
 spec:
   secretName: {{ template "app.fullname" . }}-ca-root
   isCA: true

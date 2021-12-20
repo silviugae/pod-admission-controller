@@ -3,14 +3,14 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: {{ template "app.fullname" . }}-webhook
   annotations:
-    cert-manager.io/inject-ca-from: {{ template "app.fullname" . }}-client
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "app.fullname" . }}-client
 webhooks:
-  - name: pod-validation.{{ Release.Namespace }}.svc
+  - name: pod-validation.{{ .Release.Namespace }}.svc
     admissionReviewVersions: ["v1"]
     clientConfig:
       service:
         name: {{ template "app.fullname" . }}-service
-        namespace: {{ Release.Namespace }}
+        namespace: {{ .Release.Namespace }}
         path: "/validate"
     rules:
       - operations: ["CREATE"]

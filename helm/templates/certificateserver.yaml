@@ -10,7 +10,7 @@ spec:
   duration: 2160h
   renewBefore: 360h
   dnsNames:
-    - {{ template "app.fullname" . }}-service.{{ template "app.fullname" . }}.svc
+    - {{ template "app.fullname" . }}-service.{{ .Release.Namespace }}.svc
   isCA: false
   privateKey:
     algorithm: RSA

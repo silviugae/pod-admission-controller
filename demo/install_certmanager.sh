@@ -3,4 +3,4 @@ helm --debug upgrade --install \
   --namespace cert-manager \
   --create-namespace \
   --version v1.6.1 \
-  --set installCRDs=true,startupapicheck.enabled=false
+  --set installCRDs=true

@@ -10,7 +10,7 @@ spec:
   duration: 2160h
   renewBefore: 360h
   dnsNames:
-    - pod-validation.{{ Release.Namespace }}.svc
+    - pod-validation.{{ .Release.Namespace }}.svc
   isCA: false
   privateKey:
     algorithm: RSA
