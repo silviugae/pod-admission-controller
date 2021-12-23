@@ -25,7 +25,7 @@ spec:
       containers:
       - name: admission-controller
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-        command: ["./admission-controller", "--tls-cert", "{{ .Values.config.webserver.certsPath }}/tls.crt", "--tls-key", "{{ .Values.config.webserver.certsPath }}/tls.key", "--labels", "{{ .Values.config.labels }}"]
+        command: ["./admission-controller", "--tls-cert", "{{ .Values.config.webserver.certsPath }}/tls.crt", "--tls-key", "{{ .Values.config.webserver.certsPath }}/tls.key", "--labels", "{{ .Values.config.labels }}", "--port", "{{ .Values.config.webserver.port }}"]
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         {{- if .Values.resources }}
         resources:

@@ -12,6 +12,7 @@ webhooks:
         name: {{ template "app.fullname" . }}-service
         namespace: {{ .Release.Namespace }}
         path: "/validate"
+        port: {{ .Values.config.webserver.port }}
     rules:
       - operations: ["CREATE"]
         apiGroups: [""]
